@@ -1,0 +1,136 @@
+<!-- <!DOCTYPE html> -->
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <title>InsightCo</title>
+</head>
+<body>
+    <!-- NavBar -->
+    <section class="header">
+        <nav>
+            <img class="click">
+            <img class="logo-nav" src="{{ url_for('static', filename='darklogo.png') }}" alt="">
+            <div class="nav-links">
+                <ul>
+                    <li><a href="#tagline">HOME</a></li>
+                    <li><a href="#about">ABOUT US</a></li>
+                    <li><a href="#insights">GET INSIGHTS</a></li>
+                    <li><a href="#footer">CONTACT US</a></li>
+                </ul>
+            </div>
+        </nav>
+    </section>
+    <!-- Tagline -->
+    <section class="animated-background">
+        <ul class="circles">
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+        <section class="tagline" id="tagline">
+            <div class="text-box">
+                <div class="card__content">
+                    <h1>Discover Insights, Not Just Comments</h1>
+                </div>
+            </div>
+            <div class="middle">
+                <button class="pushable" onclick="scrollToInsights()">
+                    <span class="shadow"></span>
+                    <span class="edge"></span>
+                    <span class="front">
+                        Get Insights
+                    </span>
+                </button>
+            </div>
+        </section>
+        <!-- About Us -->
+        <section class="about" id="about">
+            <div class="slideTwo">
+                <div class="video-container">
+                    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/MIz8oxSyiSA?si=2EheApjc3MbrS-gQ"
+                        title="YouTube video player" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+                <div class="content">
+                    <h3>What is <span>InsightCo?</span></h3>
+                    <p>InsightCo is an advanced platform designed to delve into the world of YouTube video comments like
+                        never before.
+                        By harnessing the power of web scraping and cutting-edge sentiment analysis techniques,
+                        InsightCo effortlessly extracts comments and categorizes sentiments using the renowned VADER
+                        model.
+                        Through intuitive visualization tools such as dynamic pie charts and captivating word clouds,
+                        users gain deep insights into the sentiments prevalent within video discussions.
+                        With a seamless user interface and integration of ChatGPT API for comment summarization,
+                        InsightCo elevates the user experience, empowering individuals to unlock valuable insights from
+                        the diverse array of opinions expressed in YouTube video comments.
+                    </p>
+                </div>
+            </div>
+            <ul class="circles">
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
+        </section>
+        <!-- Get Insights -->
+        <section class="insights" id="insights">
+            <div class="slideThree">
+                <div class="form-container">
+                    <h1 class="formH1">Discover Insights, Not Just Comments!</h1>
+                    <form action="/scrape" method="post" onsubmit="return scrapeAndNotify()">
+                        <div class="form__group field" id="urlAll">
+                            <input id="URLInput" type="text" class="form__field" name="video_url"
+                                placeholder="YouTube Video URL">
+                            <label id="URLLabel" for="YouTube Video URL" class="form__label">YouTube Video URL</label>
+                        </div>
+
+                        <input id="scrappingButton" type="submit" value="Start Scrapping">
+                        <button id="analyzeButton" type="button" onclick="analyzeSentiment()"
+                            style="display: none;">Analyze Sentiment</button>
+                        <button id="openResultButton" type="button" onclick="openResult()" style="display: none;">Open
+                            InsightCo Report</button>
+                    </form>
+                </div>
+            </div>
+            <ul class="circles">
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
+        </section>
+    </section>
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+        <div class="container">
+            <div class="contact-info">
+                <h4>Contact Us</h4>
+                <p>Email: insightcoinsights@gmail.com</p>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
