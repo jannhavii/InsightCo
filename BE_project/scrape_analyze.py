@@ -1,55 +1,54 @@
 import json
-from flask import Flask, render_template, request, jsonify  #web framework to build web app; render html template; handle incoming http requests; create json http response
-import pandas as pd  #data structure for data manipulation
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer  #class for sentiment analysis using vader tool
-from wordcloud import WordCloud  #class for generating word cloud from text data
-import matplotlib.pyplot as plt  #generate graph, charts, etc
-import numpy as np  #for arrays and mathematical function
-import io  #core tools for working with streams of data
-import base64  #encoding and decoding binary data(images) as text
-from selenium import webdriver  #web automation and testing tool;main interface to create browser instances
-from selenium.webdriver.chrome.service import Service  #service class to control browser services
-from selenium.webdriver.common.by import By  #to locate elements within a document
-from selenium.webdriver.support import expected_conditions as EC  #expected conditions for waiting on elements
-from selenium.webdriver.support.ui import WebDriverWait  #waits for a certain condition to occur before proceeding
+from flask import Flask, render_template, request, jsonify 
+import pandas as pd  
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer  
+from wordcloud import WordCloud  
+import matplotlib.pyplot as plt 
+import numpy as np  
+import io 
+import base64 
+from selenium import webdriver 
+from selenium.webdriver.chrome.service import Service 
+from selenium.webdriver.common.by import By 
+from selenium.webdriver.support import expected_conditions as EC  
+from selenium.webdriver.support.ui import WebDriverWait 
 from dotenv import load_dotenv
-import os  #OS-dependent functionality
-import time  #time-related functionality.
-from openai import OpenAI  #chatgpt api library
+import os  
+import time  
+from openai import OpenAI  
 
-app = Flask(__name__)  #create instance of Flask
-static_folder='BE_project//static'  #sets folder for static files(css, js, images)
+app = Flask(__name__)  
+static_folder='BE_project//static'  
 
 #Scrapping function
 def scrape_youtube_details(url, callback):
-    options = webdriver.ChromeOptions()  #configure chrome options
-    options.add_argument('--headless')  #make browser invisible to user
-    driver = webdriver.Chrome(service=Service(executable_path=r"chromedriver-win64\chromedriver-win64\chromedriver.exe"), options=options)  #initiate chrome webdriver
+    options = webdriver.ChromeOptions()  
+    options.add_argument('--headless') 
+    driver = webdriver.Chrome(service=Service(executable_path=r"chromedriver-win64\chromedriver-win64\chromedriver.exe"), options=options) 
 
-    driver.get(url)  #open url in chrome webdriver browser
-    wait = WebDriverWait(driver, 30)  #wait obj w/ max wait time 30 sec
-    time.sleep(2)  #pause for 2 sec
+    driver.get(url)  
+    wait = WebDriverWait(driver, 30)  
+    time.sleep(2) 
 
     try:
-        #pause video by finding and clicking play button
         pause_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, 'ytp-play-button')))
         pause_button.click()
-        time.sleep(1)  #pause for 1 sec
+        time.sleep(1) 
         pause_button.click()
-        time.sleep(3)  #sleep for extra 3 sec
+        time.sleep(3)
     except Exception as e:
         print(f"Error pausing video: {str(e)}")
-    # scroll to load comments
-    last_height = 0  #keep track of page height after each scroll
-    while True:  #indefinite loop
-        driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")  #executes js to scroll webpage to bottom
-        time.sleep(3)  #time for new content to load after scrolling
-        new_height = driver.execute_script("return document.documentElement.scrollHeight")  #retrieves updated height of webpage after scrolling to bottom
-        if new_height == last_height:  #if equal, end of page hence breaks loop
+ 
+    last_height = 0  
+    while True:  
+        driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);") 
+        time.sleep(3) 
+        new_height = driver.execute_script("return document.documentElement.scrollHeight")  
+        if new_height == last_height:  
             break
-        last_height = new_height  #update after scrolling
+        last_height = new_height 
 
-    # extract video details : EC.visibility_of_element_located() to ensure element present in DOM and visible on page.
+    # extract video details 
     video_title_element = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="title"]/h1/yt-formatted-string')))
     video_title = video_title_element.text
     video_owner_element = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="text"]/a')))
@@ -66,11 +65,11 @@ def scrape_youtube_details(url, callback):
 
     # save video details to csv
     desired_directory = r"BE_project\csv_files"
-    video_details_file_path = os.path.join(desired_directory, 'youtube_video_details.csv')  #creates path; os.path.join() to combine directory path with  file name to form complete file path.
-    video_details_df.to_csv(video_details_file_path, index=False)  #to export df to CSV file
+    video_details_file_path = os.path.join(desired_directory, 'youtube_video_details.csv') 
+    video_details_df.to_csv(video_details_file_path, index=False)  
 
     # extract comments
-    comments = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="content-text"]')))  #//*[@id="content-text"]
+    comments = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="content-text"]')))
     comment_list = [comment.text for comment in comments] 
 
     # store comments in df
@@ -96,7 +95,6 @@ class SummarizationClass:
     # Summarization function
     def summarize_text(self, input_text):
         client = OpenAI(api_key=self.apikey)
-        # Generates summary by sending prompts and comments input to model and API responds with generated completion
         completion = client.chat.completions.create(
             model=self.openai_model,
             messages=[
@@ -104,22 +102,20 @@ class SummarizationClass:
                 {"role": "user", "content": "Here are the YouTube comments for summarization:\n{text}".format(text=input_text)}
             ]
         )
-        summary_output = completion.choices[0].message.content  # To extract summary content
+        summary_output = completion.choices[0].message.content
         client.close()
         return summary_output
 
     # Summarization function for overall summary
     def overall_summarize_text(self, input_text):
         client = OpenAI(api_key=self.apikey)
-        # Generates summary by sending prompts and comments input to model and API responds with generated completion
-        completion = client.chat.completions.create(
             model=self.openai_model,
             messages=[
                 {"role": "system", "content": "You are an assistant summarizing YouTube comments. Your goal is to provide a detailed yet concise summary of viewer opinions on a video. Additionally, organize the summary into distinct sections for positive feedback, negative feedback, and suggestions for improvement, each presented as bullet points. Ensure each section contains relevant feedback and suggestions."},
                 {"role": "user", "content": "You are provided with various summarized chunks, all belonging to one single video. Here are the summarized chunks :\n{text}".format(text=input_text)}
             ]
         )
-        summary_output = completion.choices[0].message.content  # To extract summary content
+        summary_output = completion.choices[0].message.content 
         client.close()
         return summary_output
 
@@ -132,7 +128,7 @@ def summarize_comments(csv_file_path):
     comments_df = pd.read_csv(csv_file_path)
     comments_df = comments_df.dropna(subset=['Comment'])
 
-    num_comments = len(comments_df) #total number of comments
+    num_comments = len(comments_df) 
     start_idx = 0
     chunk_summaries = []
 
@@ -149,9 +145,8 @@ def summarize_comments(csv_file_path):
         start_idx += 500
 
         overall_summary = summarization_instance.overall_summarize_text('\n'.join(chunk_summaries))
-        print (overall_summary)
+        print (overall_summary)  #for debugging
         return overall_summary
-        # return overall_summary.strip()
 
 def parse_summary(overall_summary):
     keywords = ["Positive Feedback:", "Negative Feedback:", "Suggestions for Improvement:"]
@@ -166,10 +161,9 @@ def parse_summary(overall_summary):
 
         if current_section:
             section_content = line.replace(current_section, '').strip()
-            # Check if the line is not only whitespace and does not contain 4 asterisks
             if section_content and section_content != "****" and section_content!= "####":
                 sections[current_section].append(section_content)
-    print(sections)
+    print(sections) #for debugging
     return sections
         
 #route for root URL of flask app
@@ -183,11 +177,11 @@ def scrape():
     if request.method == 'POST':
         if request.headers['Content-Type'] != 'application/json':  #for debugging
             return jsonify({'error': 'Unsupported Media Type'}), 415
-        video_url = request.json.get('video_url')  #retrieves url from json data
-        def notify_completion(video_details_file, comments_file): # define callback function to handle notif
-            print("Scraping completed. Files generated:", video_details_file, comments_file)  #inform completion of scrapping and specifies files generated
+        video_url = request.json.get('video_url')  
+        def notify_completion(video_details_file, comments_file): 
+            print("Scraping completed. Files generated:", video_details_file, comments_file)  #for debugging
         video_details_file, comments_file = scrape_youtube_details(video_url, notify_completion)
-        return jsonify({'message': 'Scraping completed', 'video_details': video_details_file, 'comments': comments_file})  #respond with  JSON msg containing paths to generated files
+        return jsonify({'message': 'Scraping completed', 'video_details': video_details_file, 'comments': comments_file}) 
     else:
         return jsonify({'error': 'Method Not Allowed'}), 405
 
@@ -195,7 +189,6 @@ def scrape():
 def analyze():
     if request.method == 'POST':
         print("Received POST request to /analyze")  # for debugging
-
         #get csv files using json request
         video_details_csv = request.json.get('video_details')
         comments_csv = request.json.get('comments')
@@ -223,10 +216,10 @@ def analyze():
 
         # for sentiment score
         def get_sentiment_score(comment):
-            if isinstance(comment, str):  # check if comment is string
+            if isinstance(comment, str):  
                 sentiment = analyzer.polarity_scores(comment)
                 return sentiment['compound']
-            return np.nan  # return NaN for non-string values
+            return np.nan  
             
         # apply function to each comment
         df['Sentiment_Score'] = df['Comment'].apply(get_sentiment_score)
@@ -241,10 +234,10 @@ def analyze():
         plt.title('Sentiment Distribution')
 
         # encoding pie chart to base64 for display in HTML
-        img = io.BytesIO() # creates BytesIO obj to store img data
-        plt.savefig(img, format='png') # save generated pie chart
-        img.seek(0) # obj's reading position to start.
-        pie_chart = base64.b64encode(img.getvalue()).decode() # convert image data into a base64-encoded string, ready for HTML display.
+        img = io.BytesIO() 
+        plt.savefig(img, format='png') 
+        img.seek(0)
+        pie_chart = base64.b64encode(img.getvalue()).decode()
         
         # generating word clouds
         def generate_wordcloud(sentiment):
@@ -253,8 +246,7 @@ def analyze():
             img = io.BytesIO()
             wordcloud.to_image().save(img, format='PNG')
             img.seek(0)
-            wordcloud_encoded = base64.b64encode(img.getvalue()).decode('utf-8') # decode('utf-8'): interprets encoded bytes as a UTF-8 string.
-            return wordcloud_encoded
+            wordcloud_encoded = base64.b64encode(img.getvalue()).decode('utf-8') 
         
         #apply funtion for each sentiment
         positive_wordcloud = generate_wordcloud('positive')
@@ -285,6 +277,5 @@ def analyze():
     else:
         return jsonify({'error': 'Method Not Allowed'}), 405
 
-#run flask app only if script executed directly & run with debugging enabled
 if __name__ == '__main__':
     app.run(debug=True)
