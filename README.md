@@ -17,3 +17,7 @@ InsightCo is a sentiment analysis tool designed for YouTube content. It leverage
 - **Comment Summarization (ChatGPT API)**: Integrates ChatGPT API using GPT-3.5 Turbo for summarizing YouTube comments and highlighting key points and sentiments.
 - **Frontend Development (HTML, CSS, JavaScript)**: Creates an interactive and dynamic user interface to trigger sentiment analysis, visualize results, and access comment summaries.
 - **JSON Content Type for Data Transmission**: Utilizes JSON for structured data transmission to ensure compatibility and ease of processing for web scraping and sentiment analysis functionalities.
+
+## Demo Video
+
+[![InsightCo Demo](https://img.youtube.com/vi/MIz8oxSyiSA/0.jpg)](https://www.youtube.com/watch?v=MIz8oxSyiSA)
