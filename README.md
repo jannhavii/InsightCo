@@ -20,4 +20,8 @@ InsightCo is a sentiment analysis tool designed for YouTube content. It leverage
 
 ## Demo Video
 
-[![InsightCo Demo](https://img.youtube.com/vi/MIz8oxSyiSA/0.jpg)](https://www.youtube.com/watch?v=MIz8oxSyiSA)
+<div align="center">
+    <a href="https://www.youtube.com/watch?v=MIz8oxSyiSA">
+        <img src="https://img.youtube.com/vi/MIz8oxSyiSA/0.jpg" alt="InsightCo Demo" style="width:560px;height:315px;">
+    </a>
+</div>
